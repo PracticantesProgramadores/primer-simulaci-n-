@@ -189,9 +189,14 @@
   #canvas{width:100%;height:420px;display:block}
 
   /* svg segments */
-  .seg{transition:fill .18s ease, transform .18s ease; cursor:pointer; fill:rgba(255,255,255,.03); stroke:rgba(255,255,255,.06)}
-  .seg:hover{transform:translateY(-2px)}
+  .seg{transition:fill .18s ease, transform .18s ease; cursor:pointer; fill:rgba(255,255,255,.08); stroke:rgba(255,255,255,.15); stroke-width:1.5}
+  .seg:hover{transform:translateY(-2px); fill:rgba(255,255,255,.12)}
   .seg.selected{fill:var(--accent); stroke:var(--accent)}
+  
+  /* Light theme segments - more visible */
+  :root.light .seg{fill:rgba(0,0,0,.06); stroke:rgba(0,0,0,.2)}
+  :root.light .seg:hover{fill:rgba(0,0,0,.1)}
+  :root.light .seg.selected{fill:var(--accent); stroke:var(--accent)}
 
   /* result and modal */
   .result{margin-top:12px;min-height:28px;color:var(--muted)}
@@ -370,12 +375,9 @@
 
     // Init
     function init(){
-      // theme: check prefers-color-scheme
-      if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches){
-        document.documentElement.classList.add('light');
-        document.documentElement.style.setProperty('--bg', '#f6f7fb');
-      }
-
+      // Dark theme by default - no need to check prefers-color-scheme
+      // User can toggle manually if they want light theme
+      
       // add intro-active by default
       document.body.classList.add('intro-active');
 
@@ -532,9 +534,9 @@
       // neutral placeholder (a faint circle)
       const circle = document.createElementNS('http://www.w3.org/2000/svg','circle');
       circle.setAttribute('cx','200'); circle.setAttribute('cy','200'); circle.setAttribute('r','120');
-      circle.setAttribute('fill','rgba(255,255,255,.02)');
-      circle.setAttribute('stroke','rgba(255,255,255,.03)');
-      circle.setAttribute('stroke-width','1');
+      circle.setAttribute('fill','rgba(255,255,255,.04)');
+      circle.setAttribute('stroke','rgba(255,255,255,.08)');
+      circle.setAttribute('stroke-width','2');
       g.appendChild(circle);
       svg.appendChild(g);
     }
@@ -598,7 +600,8 @@
       const border = document.createElementNS('http://www.w3.org/2000/svg','rect');
       border.setAttribute('x', left); border.setAttribute('y', top);
       border.setAttribute('width', width); border.setAttribute('height', height);
-      border.setAttribute('fill','none'); border.setAttribute('stroke','rgba(255,255,255,.06)');
+      border.setAttribute('fill','none'); border.setAttribute('stroke','rgba(255,255,255,.15)');
+      border.setAttribute('stroke-width','2');
       svg.appendChild(g);
       svg.appendChild(border);
     }
@@ -624,7 +627,8 @@
       // triangle border
       const border = document.createElementNS('http://www.w3.org/2000/svg','polygon');
       border.setAttribute('points', `${A.x},${A.y} ${B.x},${B.y} ${C.x},${C.y}`);
-      border.setAttribute('fill','none'); border.setAttribute('stroke','rgba(255,255,255,.06)');
+      border.setAttribute('fill','none'); border.setAttribute('stroke','rgba(255,255,255,.15)');
+      border.setAttribute('stroke-width','2');
       svg.appendChild(border);
     }
 
