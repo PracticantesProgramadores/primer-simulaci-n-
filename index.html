@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Simulación: Fracciones Propias — Premium</title>
+
+  <!-- Tip: quita bootstrap si no lo usas -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+
+  <style>
+  /* ---------- VARIABLES / RESET ---------- */
+  :root{
+    --bg:#0f172a;
+    --panel:#111827;
+    --panel-light:#1e293b;
+    --muted:#94a3b8;
+    --text:#f8fafc;
+    --primary:#2563eb;
+    --secondary:#64748b;
+    --success:#16a34a;
+    --warning:#f59e0b;
+    --danger:#ef4444;
+    --accent:#7c3aed;
+
+    --radius:12px;
+    --radius-lg:16px;
+    --transition:.22s ease;
+    --glass: rgba(255,255,255,.04);
+  }
+
+  /* light theme */
+  :root.light{
+    --bg:#f6f7fb;
+    --panel:#ffffff;
+    --panel-light:#f0f4ff;
+    --muted:#6b7280;
+    --text:#0b1220;
+    --glass: rgba(11,18,32,.04);
+  }
+
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;
+    background: linear-gradient(160deg,var(--bg) 0%, #0b1022 60%);
+    color:var(--text);
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+    transition: background var(--transition), color var(--transition);
+  }
+
+  /* central app wrapper */
+  .app{
+    max-width:1100px;
+    margin:0 auto;
+    padding:28px;
+  }
+
+  /* ---------- INTRO CENTERING (ACTIVE) ---------- */
+  body.intro-active{
+    background: linear-gradient(180deg, rgba(11,16,34,0.95) 0%, rgba(11,16,34,0.95) 100%);
+    background-blend-mode:overlay;
+  }
+
+  body.intro-active .app{
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-direction:column;
+  }
+
+  body.intro-active header,
+  body.intro-active main,
+  body.intro-active footer{
+    display:none !important;
+  }
+
+  /* ---------- HEADER ---------- */
+  .header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:12px;
+    margin-bottom:20px;
+  }
+  .title-row{display:flex;align-items:center;gap:12px}
+  .brand {
+    display:flex;
+    gap:12px;
+    align-items:center;
+  }
+  .logo {
+    width:48px;height:48px;border-radius:10px;overflow:hidden;
+    background:linear-gradient(135deg,var(--primary),var(--accent));
+    display:inline-flex;align-items:center;justify-content:center;font-weight:700;color:white;
+    box-shadow:0 6px 18px rgba(2,6,23,.45);
+  }
+
+  h1{font-size:22px;margin:0;font-weight:700}
+  .scoreboard{display:flex;gap:10px;align-items:center}
+  .pill{
+    display:inline-flex;align-items:center;gap:8px;background:var(--glass);
+    padding:8px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.04);
+    font-weight:600;color:var(--muted);
+  }
+
+  /* ---------- PANELS ---------- */
+  .panel{
+    background:var(--panel);
+    border-radius:var(--radius-lg);
+    padding:20px;
+    border:1px solid rgba(255,255,255,.05);
+    box-shadow:0 8px 30px rgba(2,6,23,.45);
+    transition:background var(--transition), transform var(--transition);
+  }
+
+  .intro.panel{
+    max-width:920px;width:100%;
+  }
+
+  .intro h2{font-size:26px;margin:0 0 8px 0}
+  .intro p{color:var(--muted);margin-bottom:12px;line-height:1.5}
+  .steps{color:var(--muted); margin-left:18px;}
+
+  .intro-actions{display:flex;justify-content:flex-end;margin-top:12px}
+  .primary{background:var(--primary);color:white;padding:10px 14px;border-radius:12px;border:none}
+  .primary:active{transform:translateY(1px)}
+
+  /* ---------- LAYOUT ---------- */
+  .main{
+    display:grid;
+    grid-template-columns:420px 1fr;
+    gap:20px;
+    align-items:start;
+    max-width:1100px;
+    margin:0 auto;
+  }
+
+  /* Centrado vertical cuando hay espacio */
+  body:not(.intro-active) {
+    display:flex;
+    flex-direction:column;
+    min-height:100vh;
+  }
+
+  body:not(.intro-active) .app {
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+  }
+
+  @media (max-width:920px){
+    .main{grid-template-columns:1fr}
+    .app{padding:18px}
+  }
+
+  /* left panel specifics */
+  .fraction-box{
+    display:flex;align-items:center;justify-content:space-between;
+    background:rgba(255,255,255,.03);padding:12px;border-radius:12px;margin-bottom:14px;
+    border:1px solid rgba(0,0,0,.05);
+  }
+
+  .label{color:var(--muted);font-size:13px;margin-bottom:6px}
+  .fraction{font-size:30px;font-weight:800}
+
+  .controls{display:flex;flex-direction:column;gap:14px}
+  .shapes{display:flex;gap:8px}
+  .shape{
+    padding:10px 12px;border-radius:10px;background:transparent;border:1px solid rgba(255,255,255,.06);
+    cursor:pointer;color:var(--text);font-weight:700;
+  }
+  .shape.active{outline:2px solid var(--accent);background:linear-gradient(180deg, rgba(124,58,237,.12), rgba(37,99,235,.06))}
+
+  input[type=number]{padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,.06);background:transparent;color:var(--text)}
+  .actions{display:flex;gap:8px;flex-wrap:wrap}
+
+  .secondary{background:transparent;border:1px solid rgba(255,255,255,.07);color:var(--text);padding:10px;border-radius:10px}
+  .success{background:var(--success);color:white;padding:10px;border-radius:10px;border:none}
+  .warning{background:var(--warning);color:white;padding:10px;border-radius:10px;border:none}
+  .ghost{background:transparent;color:var(--muted);border:1px solid rgba(255,255,255,.06);padding:10px;border-radius:10px}
+
+  /* right panel / canvas */
+  .canvas-wrap{background:linear-gradient(180deg,var(--panel) 0%, var(--panel-light) 100%);border-radius:12px;padding:14px;border:1px solid rgba(255,255,255,.04)}
+  #canvas{width:100%;height:420px;display:block}
+
+  /* svg segments */
+  .seg{transition:fill .18s ease, transform .18s ease; cursor:pointer; fill:rgba(255,255,255,.03); stroke:rgba(255,255,255,.06)}
+  .seg:hover{transform:translateY(-2px)}
+  .seg.selected{fill:var(--accent); stroke:var(--accent)}
+
+  /* result and modal */
+  .result{margin-top:12px;min-height:28px;color:var(--muted)}
+  .overlay{position:fixed;inset:0;background:rgba(2,6,23,.6);display:flex;align-items:center;justify-content:center;z-index:1000}
+  .hidden{display:none!important}
+  .modal-card{background:var(--panel);padding:18px;border-radius:14px;max-width:480px;width:92%;border:1px solid rgba(255,255,255,.06)}
+  .modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}
+
+  /* small helpers */
+  .muted{color:var(--muted)}
+  .center{display:flex;align-items:center;justify-content:center}
+  .controls .group{display:block}
+
+  /* small animation */
+  .fade-up{animation:fadeUp .35s ease both}
+  @keyframes fadeUp{from{opacity:0; transform:translateY(8px)} to{opacity:1; transform:none}}
+
+  /* toggle switch */
+  .toggle {
+    display:inline-flex;align-items:center;gap:8px;padding:6px;background:var(--glass);border-radius:999px;border:1px solid rgba(255,255,255,.04)
+  }
+  .toggle button{background:transparent;border:none;color:var(--text);cursor:pointer;font-weight:700}
+
+  </style>
+</head>
+<body>
+  <div class="app">
+
+    <!-- INTRO -->
+    <section class="intro panel" id="intro">
+      <h2>¿Cómo funciona el juego?</h2>
+      <p>Representa una fracción propia graficando la unidad como una figura geométrica dividida en partes iguales y coloreando tantas partes como indique el numerador.</p>
+      <ul class="steps">
+        <li>Clic en <strong>Iniciar juego</strong> para comenzar.</li>
+        <li>Clic en <strong>Graficar fracción</strong> para obtener una fracción aleatoria.</li>
+        <li><strong>Selecciona la figura</strong> que representará la unidad.</li>
+        <li>Escribe <strong>en cuántas partes</strong> se divide la unidad y pulsa <strong>Dividir</strong>.</li>
+        <li><strong>Colorea</strong> las porciones que indique el numerador y pulsa <strong>Verificar</strong>.</li>
+        <li>Tienes <strong>3 intentos</strong> por ejercicio; los aciertos suman <strong>puntos</strong>.</li>
+      </ul>
+      <div class="intro-actions">
+        <button id="btnIntroStart" class="primary">Iniciar juego</button>
+      </div>
+    </section>
+
+    <!-- HEADER -->
+    <header class="header" role="banner">
+      <div class="title-row">
+        <div class="brand">
+          <div class="logo">F</div>
+          <div>
+            <h1>Graficar Fracciones</h1>
+            <div class="muted">Juego educativo — Premium</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="scoreboard">
+        <div class="pill">Puntos: <strong id="score">0</strong></div>
+        <div class="pill">Intentos: <strong id="lives">3</strong></div>
+        <div class="toggle" title="Tema">
+          <button id="themeToggle">🌗</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- MAIN -->
+    <main class="main hidden" role="main">
+      <!-- left -->
+      <section class="panel left fade-up" aria-labelledby="controls-title">
+        <div class="fraction-box">
+          <div>
+            <div class="label">Fracción a representar</div>
+            <div class="fraction" id="targetFraction">–/–</div>
+          </div>
+        </div>
+
+        <div class="controls">
+          <div>
+            <button id="btnStart" class="primary">Graficar fracción</button>
+          </div>
+
+          <div class="group">
+            <div class="label">Selecciona la figura</div>
+            <div class="shapes">
+              <button data-shape="circle" class="shape active">Círculo</button>
+              <button data-shape="square" class="shape">Cuadrado</button>
+              <button data-shape="triangle" class="shape">Triángulo</button>
+            </div>
+          </div>
+
+          <div class="group">
+            <label class="label" for="partsInput">¿En cuántas partes dividimos la unidad?</label>
+            <div class="parts-row" style="display:flex;gap:8px;margin-top:8px">
+              <input id="partsInput" type="number" min="2" step="1" placeholder="Ej. 8" />
+              <button id="btnDivide" class="secondary">Dividir</button>
+            </div>
+          </div>
+
+          <div class="actions">
+            <button id="btnVerify" class="success" disabled>Verificar</button>
+            <button id="btnResetColors" class="warning" disabled>Limpiar selección</button>
+            <button id="btnResetAll" class="ghost">Reset</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- right -->
+      <section class="panel right fade-up" aria-labelledby="canvas-title">
+        <div class="canvas-wrap">
+          <svg id="canvas" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg" aria-label="Lienzo de fracciones"></svg>
+        </div>
+
+       <!--  <div class="result" id="result">Selecciona la figura, divide y colorea las porciones.</div> -->
+      </section>
+    </main>
+
+    <footer class="footer hidden" style="margin-top:18px">
+      <button id="btnExit" class="ghost">Salir</button>
+    </footer>
+
+  </div>
+
+  <!-- MODAL -->
+  <div id="modalOverlay" class="overlay hidden" role="dialog" aria-modal="true">
+    <div class="modal-card">
+      <h3 id="modalTitle">Resultado</h3>
+      <p id="feedbackText"></p>
+      <div class="modal-actions">
+        <button id="btnModalContinue" class="primary">Continuar</button>
+        <button id="btnModalExit" class="ghost">Salir</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ---------- SCRIPT (todo en una pieza) ---------- -->
+  <script>
+  (function(){
+    // App state
+    let score = 0;
+    let lives = 3;
+    let current = { numerator:0, denominator:0, shape:'circle', parts:0 };
+    const svg = document.getElementById('canvas');
+    const targetFraction = document.getElementById('targetFraction');
+    const scoreEl = document.getElementById('score');
+    const livesEl = document.getElementById('lives');
+    const resultEl = document.getElementById('result');
+
+    // Buttons
+    const btnIntroStart = document.getElementById('btnIntroStart');
+    const btnStart = document.getElementById('btnStart');
+    const btnDivide = document.getElementById('btnDivide');
+    const btnVerify = document.getElementById('btnVerify');
+    const btnResetColors = document.getElementById('btnResetColors');
+    const btnResetAll = document.getElementById('btnResetAll');
+    const btnExit = document.getElementById('btnExit');
+
+    // Theme toggle
+    const themeToggle = document.getElementById('themeToggle');
+    // Elements for showing/hiding main
+    const header = document.querySelector('header');
+    const main = document.querySelector('main');
+    const footer = document.querySelector('footer');
+    const intro = document.getElementById('intro');
+
+    // Shapes
+    const shapeButtons = Array.from(document.querySelectorAll('.shape'));
+    const partsInput = document.getElementById('partsInput');
+
+    // Modal
+    const modalOverlay = document.getElementById('modalOverlay');
+    const modalTitle = document.getElementById('modalTitle');
+    const feedbackText = document.getElementById('feedbackText');
+    const btnModalContinue = document.getElementById('btnModalContinue');
+    const btnModalExit = document.getElementById('btnModalExit');
+
+    // Init
+    function init(){
+      // theme: check prefers-color-scheme
+      if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches){
+        document.documentElement.classList.add('light');
+        document.documentElement.style.setProperty('--bg', '#f6f7fb');
+      }
+
+      // add intro-active by default
+      document.body.classList.add('intro-active');
+
+      // events
+      btnIntroStart.addEventListener('click', startGameUI);
+      btnStart.addEventListener('click', generateRandomFraction);
+      btnDivide.addEventListener('click', divideShapeFromInput);
+      btnVerify.addEventListener('click', verifyAnswer);
+      btnResetColors.addEventListener('click', clearSelection);
+      btnResetAll.addEventListener('click', resetAll);
+      btnExit.addEventListener('click', ()=> { location.reload() });
+      themeToggle.addEventListener('click', toggleTheme);
+
+      shapeButtons.forEach(btn=>{
+        btn.addEventListener('click', ()=> {
+          shapeButtons.forEach(b=>b.classList.remove('active'));
+          btn.classList.add('active');
+          current.shape = btn.dataset.shape;
+          clearSelection();
+          renderEmptyCanvas();
+        });
+        // set default
+        current.shape = document.querySelector('.shape.active').dataset.shape;
+      });
+
+      btnModalContinue.addEventListener('click', ()=> { 
+        modalOverlay.classList.add('hidden');
+        // Generar nueva fracción automáticamente
+        clearSelection();
+        generateRandomFraction();
+      });
+      btnModalExit.addEventListener('click', ()=> { location.reload() });
+
+      // initial empty canvas
+      renderEmptyCanvas();
+      updateScoreLives();
+    }
+
+    // UI controls
+    function startGameUI(){
+      // hide intro and show main
+      document.body.classList.remove('intro-active');
+      header.style.display = '';
+      main.classList.remove('hidden');
+      footer.classList.remove('hidden');
+      intro.classList.add('hidden');
+      main.style.display = 'grid';
+    }
+
+    function toggleTheme(){
+      if (document.documentElement.classList.contains('light')){
+        document.documentElement.classList.remove('light');
+      } else {
+        document.documentElement.classList.add('light');
+      }
+    }
+
+    // generate fraction: numerator < denominator, denominator between 2 and 10
+    function generateRandomFraction(){
+      const denom = Math.floor(Math.random()*8) + 2; // 2..9
+      const numer = Math.floor(Math.random()*(denom-1)) + 1; // 1..denom-1
+      current.denominator = denom;
+      current.numerator = numer;
+      current.parts = denom;
+      targetFraction.textContent = numer + ' / ' + denom;
+      partsInput.value = denom;
+      resultEl.textContent = 'Divide la forma en ' + denom + ' partes y colorea ' + numer + '.';
+      renderShape(current.shape, denom);
+      btnVerify.disabled = false;
+      btnResetColors.disabled = false;
+    }
+
+    function divideShapeFromInput(){
+      const val = parseInt(partsInput.value,10);
+      if (!val || val < 2 || val > 36){
+        alert('Ingresa un número válido entre 2 y 36');
+        return;
+      }
+      current.parts = val;
+      // if no fraction selected, create a random numerator
+      if (!current.denominator){
+        const denom = val;
+        const numer = Math.floor(Math.random()*(denom-1)) + 1;
+        current.denominator = denom;
+        current.numerator = numer;
+        targetFraction.textContent = numer + ' / ' + denom;
+        resultEl.textContent = 'Colorea ' + numer + ' porciones.';
+      } else {
+        // keep the existing numerator/denominator if already generated
+        targetFraction.textContent = (current.numerator || '–') + ' / ' + current.parts;
+      }
+      renderShape(current.shape, val);
+      btnVerify.disabled = false;
+      btnResetColors.disabled = false;
+    }
+
+    // clear selection
+    function clearSelection(){
+      svg.querySelectorAll('.seg').forEach(s=> s.classList.remove('selected'));
+    }
+
+    // Reset everything
+    function resetAll(){
+      score = 0; lives = 3;
+      current = { numerator:0, denominator:0, shape:current.shape || 'circle', parts:0 };
+      targetFraction.textContent = '–/–';
+      partsInput.value = '';
+      resultEl.textContent = 'Selecciona la figura, divide y colorea las porciones.';
+      renderEmptyCanvas();
+      updateScoreLives();
+      btnVerify.disabled = true;
+      btnResetColors.disabled = true;
+    }
+
+    // Check selected count vs numerator
+    function verifyAnswer(){
+      const selected = svg.querySelectorAll('.seg.selected').length;
+      const needed = current.numerator;
+      if (!needed && current.parts){
+        // no numerator generated -> pick default numerator = Math.floor(parts/2)
+        current.numerator = Math.floor(current.parts/2) || 1;
+      }
+      if (selected === current.numerator){
+        score += 10;
+        showModal('¡Correcto! +10 puntos', true);
+      } else {
+        lives -= 1;
+        if (lives <= 0){
+          showModal('Se terminaron los intentos. Juego reiniciado.', false, true);
+          resetAll();
+          return;
+        } else {
+          showModal('Incorrecto. Intentos restantes: ' + lives, false);
+        }
+      }
+      updateScoreLives();
+    }
+
+    function showModal(message, positive=false, finished=false){
+      modalOverlay.classList.remove('hidden');
+      modalTitle.textContent = positive ? '¡Bien hecho!' : (finished ? 'Fin del juego' : 'Resultado');
+      feedbackText.textContent = message;
+    }
+
+    function updateScoreLives(){
+      scoreEl.textContent = score;
+      livesEl.textContent = lives;
+    }
+
+    // RENDERERS
+    function renderEmptyCanvas(){
+      svg.innerHTML = '';
+      const g = svg.ownerDocument.createElementNS('http://www.w3.org/2000/svg','g');
+      // neutral placeholder (a faint circle)
+      const circle = document.createElementNS('http://www.w3.org/2000/svg','circle');
+      circle.setAttribute('cx','200'); circle.setAttribute('cy','200'); circle.setAttribute('r','120');
+      circle.setAttribute('fill','rgba(255,255,255,.02)');
+      circle.setAttribute('stroke','rgba(255,255,255,.03)');
+      circle.setAttribute('stroke-width','1');
+      g.appendChild(circle);
+      svg.appendChild(g);
+    }
+
+    // choose renderer by shape
+    function renderShape(shape, parts){
+      svg.innerHTML = '';
+      if (shape === 'circle') renderCircle(parts);
+      else if (shape === 'square') renderSquare(parts);
+      else renderTriangle(parts);
+    }
+
+    // CIRCLE: create wedge segments
+    function renderCircle(parts){
+      const cx=200, cy=200, r=120;
+      const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+      for (let i=0;i<parts;i++){
+        const start = (i/parts) * 2*Math.PI - Math.PI/2;
+        const end = ((i+1)/parts) * 2*Math.PI - Math.PI/2;
+        const x1 = cx + r*Math.cos(start);
+        const y1 = cy + r*Math.sin(start);
+        const x2 = cx + r*Math.cos(end);
+        const y2 = cy + r*Math.sin(end);
+        const large = (end-start) > Math.PI ? 1 : 0;
+        const d = [
+          `M ${cx} ${cy}`,
+          `L ${x1} ${y1}`,
+          `A ${r} ${r} 0 ${large} 1 ${x2} ${y2}`,
+          'Z'
+        ].join(' ');
+        const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+        path.setAttribute('d', d);
+        path.classList.add('seg');
+        path.dataset.index = i;
+        path.addEventListener('click', ()=> toggleSeg(path));
+        g.appendChild(path);
+      }
+      svg.appendChild(g);
+    }
+
+    // SQUARE: divide circle-like square into triangular fan from center or vertical slices
+    function renderSquare(parts){
+      // We'll do vertical slices
+      const width = 240, height = 240;
+      const left = 80, top = 80;
+      const sliceW = width / parts;
+      const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+      for (let i=0;i<parts;i++){
+        const x = left + i*sliceW;
+        const rect = document.createElementNS('http://www.w3.org/2000/svg','rect');
+        rect.setAttribute('x', x);
+        rect.setAttribute('y', top);
+        rect.setAttribute('width', Math.ceil(sliceW)+0.5);
+        rect.setAttribute('height', height);
+        rect.classList.add('seg');
+        rect.dataset.index = i;
+        rect.addEventListener('click', ()=> toggleSeg(rect));
+        g.appendChild(rect);
+      }
+      // border
+      const border = document.createElementNS('http://www.w3.org/2000/svg','rect');
+      border.setAttribute('x', left); border.setAttribute('y', top);
+      border.setAttribute('width', width); border.setAttribute('height', height);
+      border.setAttribute('fill','none'); border.setAttribute('stroke','rgba(255,255,255,.06)');
+      svg.appendChild(g);
+      svg.appendChild(border);
+    }
+
+    // TRIANGLE: fan slices from top vertex
+    function renderTriangle(parts){
+      const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+      const A = {x:200,y:70}, B = {x:80,y:320}, C = {x:320,y:320};
+      for (let i=0;i<parts;i++){
+        // linear interpolation along base B->C
+        const t1 = i/parts, t2 = (i+1)/parts;
+        const x1 = B.x + (C.x - B.x)*t1;
+        const x2 = B.x + (C.x - B.x)*t2;
+        const d = [`M ${A.x} ${A.y}`, `L ${x1} ${B.y}`, `L ${x2} ${B.y}`, 'Z'].join(' ');
+        const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+        path.setAttribute('d', d);
+        path.classList.add('seg');
+        path.dataset.index = i;
+        path.addEventListener('click', ()=> toggleSeg(path));
+        g.appendChild(path);
+      }
+      svg.appendChild(g);
+      // triangle border
+      const border = document.createElementNS('http://www.w3.org/2000/svg','polygon');
+      border.setAttribute('points', `${A.x},${A.y} ${B.x},${B.y} ${C.x},${C.y}`);
+      border.setAttribute('fill','none'); border.setAttribute('stroke','rgba(255,255,255,.06)');
+      svg.appendChild(border);
+    }
+
+    function toggleSeg(el){
+      // toggle selection, but disable if parts not set
+      if (!current.parts) {
+        alert('Primero divide la figura (haz click en "Graficar fracción" o especifica partes).');
+        return;
+      }
+      el.classList.toggle('selected');
+    }
+
+    // init app
+    init();
+
+    // expose some helpers for console (optional)
+    window._fracciones = {
+      renderShape, generateRandomFraction, resetAll
+    };
+  })();
+  </script>
+</body>
+</html>
